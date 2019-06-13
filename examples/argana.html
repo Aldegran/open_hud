@@ -289,9 +289,11 @@
 
             {x:0, y:10, w:3, h:4, content:'text', params:{text:'lorem', count:2, addClass: 'default'}},
         ];
+
+        window.onload = () => init(widgets);
     </script>
 </head>
-    <body onload="setTimeout(()=>init(widgets),4000)">
+    <body>
         <div id="grid"></div>
         <div id="content"></div>
     </body>
