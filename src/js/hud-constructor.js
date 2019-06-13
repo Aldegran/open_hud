@@ -1,7 +1,4 @@
 function init(widgets) {
-	if(window['Android'] !== undefined){
-		Android.flip(false);
-	}
 	window.master = new masterClass(widgets);
 }
 const grid = 86;
