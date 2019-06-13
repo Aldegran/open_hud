@@ -1,0 +1,670 @@
+:root {
+  --bg-color: #000;
+  --bg-fade: rgba(0, 0, 0, 0.5);
+  --bg-first: rgba(21, 183, 236, 0.18);
+  --bg-second: rgba(9, 154, 120, 0.18);
+  --bg-active: rgba(0, 255, 255, 0.18);
+  --bg-important: rgba(246, 141, 0, 0.18);
+  --bg-negative: rgba(175, 0, 0, 0.18);
+  --bg-positive: rgba(0, 140, 0, 0.18);
+  --c-main: #bbb;
+  --c-first: #15b7ec;
+  --c-active: #00ffff;
+  --c-second: #099a78;
+  --c-important: #f68d00;
+  --c-negative: #af0000;
+  --c-hide: #525252;
+  --c-positive: #008c00;
+  --c-spell: #e806e6;
+  --dark1: #111;
+  --dark2: #1a1a1a;
+  --dark3: #222;
+  --dark4: #2a2a2a;
+  --dark5: #333;
+  --darkBorder1: #1a1a1a;
+  --darkBorder2: #222;
+  --darkBorder3: #2a2a2a;
+  --darkBorder4: #333;
+  --darkBorder5: #3a3a3a;
+  --shadow2: #0a0a0a;
+  --shadow3: #111;
+  --shadow4: #1a1a1a;
+  --shadow5: #222;
+  --grid: #333;
+  --grid2: #aaa;
+  --s-2: -8px;
+  --s-1: -4px;
+  --s-05: -2px;
+  --s05: 2px;
+  --s1: 4px;
+  --s2: 8px;
+  --s3: 12px;
+  --s4: 16px;
+  --s5: 20px;
+  --s6: 24px;
+  --s7: 28px;
+  --font-micro: 10px;
+  --font-main: 16px;
+  --font-header: 18px;
+  --input-width: 120px;
+  --avatar-big: 400px;
+  --avatar-small: 96px;
+  --params-c-live: red;
+  --params-bg-live: rgba(255, 0, 0, 0.2);
+  --params-c-mana: blue;
+  --params-bg-mana: rgba(0, 0, 255, 0.2);
+  --scale-speed: 0.2s;
+}
+
+@keyframes scroll {
+  0% {
+    transform: translate(0, 0) scale(1);
+  }
+  100% {
+    transform: translate(0, -60%) scale(1);
+  }
+}
+
+@keyframes blinkColor {
+  0% {
+    background: var(--bg-color);
+  }
+  50% {
+    background: var(--c-negative);
+  }
+  100% {
+    background: var(--bg-color);
+  }
+}
+
+@font-face {
+  font-family: 'Bender';
+  src: url('../fonts/bender.eot');
+  src: url('../fonts/bender.eot?#iefix') format('embedded-opentype'), url('../fonts/bender.woff2') format('woff2'), url('../fonts/bender.woff') format('woff'), url('../fonts/bender.ttf') format('truetype'), url('../fonts/bender.svg#glyphicons_halflingsregular') format('svg');
+}
+
+html, body{
+    height: 100%;
+    /*overflow: hidden;*/
+    box-sizing: border-box;
+}
+
+body{
+    color: var(--c-main);
+    font-size: var(--font-main);
+    font-family: Bender;
+    background: var(--bg-color);
+    margin: 0;
+}
+
+ul{
+  margin: 0;
+  padding: 0;
+}
+
+li{
+  list-style: none;
+  display: inline-block;
+  box-sizing: border-box;
+}
+
+a{
+    text-decoration: none;
+    color: var(--c-second);
+}
+
+a.back{
+    position: absolute;
+    bottom: 0;
+    left: 0;
+}
+
+#grid{
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+#grid div{
+  float: left;
+  position: relative;
+  width: 80px;
+  height: 80px;
+  opacity: 0.3;
+  border: 3px solid;
+  border-image: url(../img/white.png) 35% round round;
+}
+
+#content{
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+#content>div{
+  position: absolute;
+  border: 3px solid;
+  overflow: hidden;
+  background: #000;
+  border-image: url(../img/white.png) 35% round round;
+}
+
+#content>div.transparent{
+  background: transparent;
+}
+
+.textList, .list {
+  overflow: hidden;
+}
+
+.textList>div {
+  padding: 0 var(--s1);
+  animation-name: scroll;
+  animation-duration: 10000ms;
+  animation-iteration-count: infinite;
+  animation-timing-function: linear;
+}
+
+.textList>div.default{
+  font-size: 8px;
+  color: var(--c-second);
+}
+
+.list>div {
+  display: flex;
+  flex-direction: column;
+  font-size: 8px;
+  color: var(--c-second);
+  padding: 0 var(--s1);
+  animation-name: scroll;
+  animation-duration: 10000ms;
+  animation-iteration-count: infinite;
+  animation-timing-function: linear;
+}
+
+.list span.fail {
+  color: var(--c-negative);
+}
+
+.list span.text {
+  padding-left: var(--s1);
+  text-transform: capitalize;
+}
+
+.bars {
+  overflow: hidden;
+  flex-direction: row;
+  align-items: flex-end;
+  display: flex;
+}
+.bars.revert {
+  align-items: flex-start;
+}
+.bars>div {
+  border: 0;
+  background: var(--c-second);
+  margin-left: 1px;
+  transition-property: height;
+  transition-duration: 1s
+}
+
+.bars.first>div {
+  background: var(--c-first);
+}
+
+.bars.negative>div {
+  background: var(--c-negative);
+}
+
+.bars.positive>div {
+  background: var(--c-positive);
+}
+
+.values1, 
+.values2 {
+  overflow: hidden;
+  flex-direction: column;
+  display: flex;
+}
+
+.values1>div{
+  border: 1px solid var(--c-second);
+  background: var(--bg-second);
+  margin: var(--s05) 0;
+  font-size: 8px;
+}
+
+.values1>div>b{
+  background: var(--c-second);
+  color: var(--bg-color);
+  padding: 2.2px var(--s05);
+  text-transform: uppercase;
+  font-weight: bold;
+  width: 50%;
+  display: inline-block;
+  box-sizing: border-box;
+  text-align: center;
+  position: relative;
+  left: -1px;
+}
+
+.values1>div>span{
+  padding: var(--s05);
+  color: var(--c-second);
+  text-align: right;
+  width: 50%;
+  display: inline-block;
+  box-sizing: border-box;
+}
+
+.values1.negative>div{
+  border: 1px solid var(--c-negative);
+  background: var(--bg-negative);
+}
+.values1.negative>div>b{
+  background: var(--c-negative);
+  color: var(--bg-color);
+}
+.values1.negative>div>span{
+  color: var(--c-negative);
+}
+
+.values2 {
+  flex-direction: row;
+}
+
+.values2>div{
+  background: var(--bg-second);
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.values2>div>b{
+  background: var(--c-second);
+  color: var(--bg-color);
+  padding: var(--s1);
+  font-weight: bold;
+  display: block;
+  box-sizing: border-box;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.values2>div>span{
+  font-size: 40px;
+  font-weight: bold;
+  color: var(--c-second);
+  text-align: center;
+  margin: auto;
+  display: block;
+  box-sizing: border-box;
+}
+
+.values2.negative>div{
+  background: var(--bg-negative);
+}
+.values2.negative>div>b{
+  background: var(--c-negative);
+  color: var(--bg-color);
+}
+.values2.negative>div>span{
+  color: var(--c-negative);
+}
+
+#content div.round-bar{
+  width: calc(100% - 20px);
+  height: calc(50% - 10px);
+  left: 10px;
+  top: 10px;
+}
+#content div.round-bar.bottom{
+  top: 50%
+}
+
+#content div.round-bar .bar{
+  border-top-width: 10px !important;
+  border-left-width: 10px !important;
+  border-bottom-width: 10px !important;
+  border-right-width: 10px !important;
+  transition: transform 2s;
+}
+#content div.round-bar.bottom .bar.line2{
+  top: calc(-100% + 10px);
+  left: 10px;
+}
+#content div.round-bar .bar.line2{
+  width: calc(100% - 20px);
+  height: calc(200% - 20px);
+  left: 10px;
+  top: 10px;
+}
+
+#content div.round-axis{
+  left: 50%;
+  top: 50%
+}
+
+.roundBar>.centerElement{
+  top: 15%;
+  left: 15%;
+  width: 70%;
+  height: 70%;
+  position: absolute;
+  background: var(--bg-second);
+  border-radius: 50%;
+  display: flex;
+}
+
+.roundBar>.centerElement>div{
+  color: var(--c-second);
+  display: flex;
+  margin: auto;
+  font-size: 60px;
+}
+
+.map>img{
+  width: 2000px;
+  left: -500px;
+  top: -500px;
+  position: absolute;
+  transition-property: top, left;
+  transition-duration: 10s
+}
+
+.map .xAxis{
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  border-top: 1px groove var(--c-second);
+}
+
+.map .yAxis{
+  position: absolute;
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  border-left: 1px groove var(--c-second);
+}
+
+.map .axisCenter{
+  position: absolute;
+  top: calc(50% - 10px);
+  left: calc(50% - 10px);
+  width: 21px;
+  height: 21px;
+  border: 3px double var(--c-negative);
+  box-sizing: border-box;
+  border-radius: 50%;
+}
+
+div.liner{
+  overflow: visible !important;
+  border: none !important;
+  background: transparent !important;
+}
+
+.liner>div{
+  position: relative;
+  height: 86px;
+  width: 86px;
+}
+
+.liner>div div{
+  position: absolute;
+}
+
+.liner>div div.side,
+.liner>div div.center{
+  width: var(--s2);
+  height: var(--s2);
+  transform: rotate(45deg);
+  border: 1px solid var(--c-second);
+  background: var(--bg-color);
+  margin-top: -5px;
+  margin-left: -5px;
+}
+
+.liner>div div.line{
+  background: none !important;
+  border-width: 0;
+}
+
+.liner>div div.line.dotted{
+  border-style: dotted;
+}
+
+.liner>div div.line.dashed{
+  border-style: dashed;
+}
+
+.liner>div div.line.groove{
+  border-style: groove;
+}
+
+.liner>div div.left{
+  right: 50%;
+  border-top: 1px solid var(--c-second);
+  left: -3px;
+  top: 50%;
+}
+
+.liner>div div.leftSide{
+  left: 0px;
+  top: 50%;
+}
+
+.liner>div div.right{
+  left: 50%;
+  border-top: 1px solid var(--c-second);
+  right: -3px;
+  top: 50%;
+}
+
+.liner>div div.rightSide{
+  right: -6px;
+  top: 50%;
+}
+
+.liner>div div.top{
+  bottom: 50%;
+  border-left: 1px solid var(--c-second);
+  top: -3px;
+  left: 50%;
+}
+
+.liner>div div.topSide{
+  top: 0px;
+  left: 50%;
+}
+
+.liner>div div.down{
+  top: 50%;
+  border-left: 1px solid var(--c-second);
+  bottom: 0px;
+  left: 50%;
+}
+
+.liner>div div.downSide{
+  bottom: -5px;
+  left: 50%;
+}
+
+.liner>div div.center{
+  top: 50%;
+  left: 50%;
+}
+
+.liner>div div.center.text{
+  top: 25%;
+  left: 25%;
+  width: 60%;
+  transform: rotate(0deg) !important;
+  height: 60%;
+  box-sizing: border-box;
+}
+.liner>div div.center.text>div{
+  border: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.liner>div div.circle>div,
+.liner>div div.circle{
+  border-radius: 50%;
+}
+
+.liner .line.negative{
+  border-color: var(--c-negative);
+}
+
+.liner>div div.solid div{
+  background: var(--c-second);
+}
+
+.liner>div div div{
+  border: 1px solid var(--c-second);
+  width: 75%;
+  height: 75%;
+  margin: 1px;
+  box-sizing: border-box;
+}
+
+.liner>div div.negative>div{
+  background: var(--c-negative);
+  border: 1px solid var(--c-negative);
+}
+
+.liner>div .side.negative{
+  border-color: var(--c-negative);
+}
+
+.liner>div div.blink>div{
+  animation-name: blinkColor;
+  animation-duration: 1000ms;
+  animation-iteration-count: infinite;
+  animation-timing-function: step-start;
+}
+
+.roundBar .text,
+.liner>div .text{
+  font-size: 8px;
+  color: var(--c-second);
+  display: flex;
+  position: absolute;
+}
+
+.liner>div .text.topLeftText{
+  left: 5%;
+  top: 5%;
+  right: 60%;
+  bottom: 60%;
+  text-align: right;
+  flex-direction: column-reverse;
+}
+
+.liner>div .text.topRightText{
+  left: 60%;
+  top: 5%;
+  right: 5%;
+  bottom: 60%;
+  flex-direction: column-reverse;
+}
+
+.liner>div .text.downLeftText{
+  left: 5%;
+  top: 60%;
+  right: 60%;
+  bottom: 5%;
+  text-align: right;
+  flex-direction: column;
+}
+
+.liner>div .text.downRightText{
+  left: 60%;
+  top: 60%;
+  right: 5%;
+  bottom: 5%;
+}
+
+.roundBar .text{  
+  width: 20%;
+  height: 20%;
+  font-size: 10px;
+}
+
+.roundBar .text.topLeftText{
+  left: var(--s1);
+  top: var(--s1);
+}
+
+.roundBar .text.topRightText{
+  right: var(--s1);
+  top: var(--s1);
+
+  text-align: right;
+  flex-direction: column;
+}
+
+.roundBar .text.downLeftText{
+  left: var(--s1);
+  bottom: var(--s1);
+  flex-direction: column-reverse;
+  color: var(--c-negative);
+}
+
+.roundBar .text.downRightText{
+  right: var(--s1);
+  bottom: var(--s1);
+  text-align: right;
+  flex-direction: column-reverse;
+  color: var(--c-negative);
+}
+
+.button>div{
+  width: 100%;
+  height: 100%;
+  border: 1px solid var(--c-second);
+  box-sizing: border-box;
+  background: var(--bg-second);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 30px;
+  font-weight: bold;
+  color: var(--c-second);
+  text-transform: uppercase;
+}
+
+.button.active>div{
+  background: var(--c-second);
+  color: var(--bg-color);
+}
+
+.button .blink{
+  width: 10px;
+  height: 10px;
+  top: 5px;
+  left: 5px;
+  border: 0;
+  background: var(--c-second);
+  box-sizing: border-box;
+  position: absolute;
+}
+.button .blink.negative{
+  animation-name: blinkColor;
+  animation-duration: 1000ms;
+  animation-iteration-count: infinite;
+  animation-timing-function: step-start;
+}
+.button .blink.empty{
+  background: transparent;
+  border: 1px groove var(--c-second);
+}
+
+.button.active .blink.empty{
+  border: 0;
+}

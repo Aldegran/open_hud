@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta charset="utf-8">
+    <title>Argana</title>
+    <link href="../src/css/huds.css" rel="stylesheet">
+    <link href="../src/css/hud.css" rel="stylesheet">
+    <script src="../src/js/jquery.js"></script>
+    <script src="../src/js/hud.js"></script>
+    <script src="../src/js/hud-constructor.js"></script>
+    <script type="text/javascript">
+        const widgets = [
+            {x:0, y:1, w:3, h:2, content:'text', params:{text:'lorem', addClass: 'default'}},
+            {x:7, y:1, w:2, h:2, content:'text', params:{text:'lorem', addClass: 'default'}},
+            {x:3, y:1, w:2, h:2, content:'list', params:{text:'lorem'}},
+            {x:0, y:3, w:3, h:1, content:'bar', params:{data:'random', count: 50, addClass: "negative"}, update: {time: 3000, callback:'barUpdate'}},
+            {x:0, y:3, w:3, h:1, content:'bar', params:{data:'random', count: 50, addClass: "transparent"}, update: {time: 1000, callback:'barUpdate'}},
+            {x:0, y:4, w:3, h:1, content:'bar', params:{data:'random', count: 50, addClass: "negative revert"}, update: {time: 3000, callback:'barUpdate'}},
+            {x:0, y:4, w:3, h:1, content:'bar', params:{data:'random', count: 50, addClass: "revert transparent"}, update: {time: 1000, callback:'barUpdate'}},
+            {x:0, y:5, w:1, h:1, content:'values1', params:{max:100, addClass: "negative"}, update: {time: 5000, callback:'valueUpdate'}},
+            {x:1, y:5, w:1, h:2, content:'values1', params:{max:100}, update: {time: 5000, callback:'valueUpdate'}},
+            {x:3, y:3, content:'values2', params:{name:"POWER", max:100}, update: {time: 10000, callback:'valueUpdate'}},
+            {x:3, y:4, content:'values2', params:{name:"LOST", max:100, addClass: "negative"}, update: {time: 10000, callback:'valueUpdate'}},
+            {x:4, y:3, w:3, h:3, content:'roundBar', params: {topLeftText:true,topRightText:true,downLeftText:true,downRightText:true}, update: {time: 6000, callback:'roundBarUpdate'}},
+            {x:0, y:7, w:6, h:6, content:'map', params:{}, update: {time: 6000, callback:'mapUpdate'}},
+            {x:5, y:1, content:'liner', params:{left:'dotted', down:'dashed', center:'solid', leftSide: true, topLeftText:true,topRightText:true,downLeftText:true,downRightText:true,}},
+            {x:5, y:2, content:'liner', params:{left:'solid negative', top:'solid', center: 'circle', leftSide: 'negative'}},
+            {x:6, y:1, content:'liner', params:{right:'groove', down:'solid', center:'solid blink', rightSide: true}},
+            {x:6, y:2, content:'liner', params:{right:'solid negative', top:'solid', center: 'text', centerText: true, rightSide: 'circle negative'}},
+            {x:0, y:0, content:'button', params:{text:true, blink:true}},
+            {x:1, y:0, content:'button', params:{trigger:true, text: true, blink:"negative"}},
+            {x:2, y:0, content:'button', params:{trigger:true, text: true, blink:"empty"}},
+        ];
+    </script>
+</head>
+    <body onload="init(widgets)">
+        <div id="grid"></div>
+        <div id="content"></div>
+    </body>
+</html>
