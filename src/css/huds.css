@@ -137,6 +137,13 @@ a.back{
   border-image: url(../img/white.png) 35% round round;
 }
 
+#grid, #content{
+    transform: scale(1);
+    opacity: 1;
+    transition: transform var(--scale-speed), filter var(--scale-speed), opacity var(--scale-speed);
+    transform-origin: top;
+}
+
 #content{
   position: relative;
   width: 100%;
@@ -153,6 +160,80 @@ a.back{
 
 #content>div.transparent{
   background: transparent;
+}
+
+#content.blur, #grid.blur{
+  opacity: 0.8;
+  transform: scale(0.95);
+  filter: blur(4px);
+}
+
+#editable-cover{
+  display: none;
+  opacity: 0.1;
+  background: black;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 49;
+}
+
+#editable-popup{
+  display: none;
+  position: fixed;
+  border: 3px solid;
+  width: 344px;
+  top: calc(50% - 86px);
+  left: calc(50% - 175px);
+  height: 172px;
+  z-index: 50;
+  background: #000;
+  border-image: url(../img/white.png) 35% round round;
+}
+
+#editable-popup>div{
+  background: var(--bg-second);
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+#editable-popup>div>b{
+  background: var(--c-second);
+  color: var(--bg-color);
+  padding: var(--s1);
+  font-weight: bold;
+  display: block;
+  box-sizing: border-box;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+#editable-popup>div>span{
+  font-size: 40px;
+  font-weight: bold;
+  color: var(--c-second);
+  text-align: center;
+  margin: auto;
+  display: block;
+  box-sizing: border-box;
+}
+
+#editable-popup>div>span>input{
+  background: none;
+  border: none;
+  color: var(--c-important);
+  font-size: 40px;
+  text-align: center;
+  width: 100%;
+}
+
+#editable-popup.open,
+#editable-cover.open{
+  display: block;
 }
 
 .textList, .list {
@@ -301,6 +382,22 @@ a.back{
   margin: auto;
   display: block;
   box-sizing: border-box;
+}
+
+
+.values2.first>div{
+  background: var(--bg-first);
+}
+
+.values2.first>div>b{
+  background: var(--c-first);
+  cursor: pointer;
+}
+
+.values2.first>div>span.first{
+  color: var(--c-first);
+  cursor: pointer;
+  font-size: 30px;
 }
 
 .values2.negative>div{
@@ -636,6 +733,21 @@ div.liner{
   font-size: 30px;
   font-weight: bold;
   color: var(--c-second);
+  text-transform: uppercase;
+}
+
+.button.first>div{
+  width: 100%;
+  height: 100%;
+  border: 1px solid var(--c-first);
+  box-sizing: border-box;
+  background: var(--bg-first);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 30px;
+  font-weight: bold;
+  color: var(--c-first);
   text-transform: uppercase;
 }
 

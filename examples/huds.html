@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no">
     <title>Examples</title>
     <link href="../src/css/huds.css" rel="stylesheet" type="text/css">
     <link href="../src/css/hud.css" rel="stylesheet" type="text/css">
@@ -98,13 +99,23 @@
                 *    blink - уголок кнопки (true, negative, empty)
                 *    trigger - залипает ли кнопка в своём состоянии
             */
-            {x:0, y:0, content:'button', params:{text:true, blink:true}},
-            {x:1, y:0, content:'button', params:{trigger:true, text: true, blink:"negative"}},
+            {x:0, y:0, content:'button', params:{text:true, callback: ()=>console.log("Click!"), blink:true}},
+            {x:1, y:0, content:'button', params:{trigger:true, callback: (e)=>console.log("Click!",e), text: true, blink:"negative"}},
             {x:2, y:0, content:'button', params:{trigger:true, text: true, blink:"empty"}},
+
+            {x:2, y:5, w:2, content:'values2', params:{name:"LOGIN (editable)", type: 'text', editable: true, editCallback: (newValue) => console.log(">>>", newValue), value: 'test'}, update: {}},
+            {x:2, y:6, w:2, content:'values2', params:{name:"COUNT (editable)", type: 'num', editable: true, editCallback: (newValue) => console.log(">>!", newValue), value: 15}, update: {}},
+
         ];
 
         // отрисовываем виджеты
-        window.onload = () => init(widgets);
+
+        const gridSettings = {
+            gridWidth: 9,
+            gridHeight: 14,
+        }
+
+        window.onload = () => hudInit(widgets, gridSettings);
     </script>
 </head>
     <body>

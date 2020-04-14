@@ -1,5 +1,5 @@
-function init(widgets) {
-	window.master = new masterClass(widgets);
+function hudInit(widgets, gridSettings) {
+	window.hud = new hudClass(widgets, gridSettings);
 }
 const grid = 86;
 const texts = {
@@ -17,27 +17,96 @@ const randSumbol = function() {
 const randString = function() {
 	return texts.strings[rand(texts.strings.length-1)];
 }
-class masterClass {
-	constructor(widgets){
+class hudClass {
+	constructor(widgets, gridSettings){
+		this.gridSettings = Object.assign({gridWidth:9, gridHeight:14}, gridSettings);
 		this.widgets = widgets;
+		$(window).resize(()=>this.resize());const el = $('#grid');
+		$('body').append($('<div>').attr('id', 'editable-popup').html("<div><b></b><span><input/></span></div>"));
+		$('body').append($('<div>').attr('id', 'editable-cover').click(()=>this.editableClose()));
+		const count = this.gridSettings.gridWidth * this.gridSettings.gridHeight;
+		for(let i = 0; i < count; i++) el.append("<div>");
 		this.generate();
+		this.resize();
 	}
 
 	generate(){
-		const el = $('#grid');
+		this.widgets.map(widget => this.draw(widget));
+	}
+
+	draw(widget){
 		const content = $('#content');
-		for(let i = 0; i < 9*14; i++) el.append("<div>");
-		this.widgets.map(widget => {
-			const w = typeof widget.content === "string" ? this[widget.content](widget) : widget.content(widget);
-			w.css({
-				top: widget.y*grid,
-				left: widget.x*grid,
-				width: (widget.w || 1)*grid-6,
-				height: (widget.h || 1)*grid-6
-			})
-			content.append(w);
-			if(widget.after) widget.after(w);
+		const w = typeof widget.content === "string" ? this[widget.content](widget) : widget.content(widget);
+		w.css({
+			top: widget.y*grid,
+			left: widget.x*grid,
+			width: (widget.w || 1)*grid-6,
+			height: (widget.h || 1)*grid-6
 		})
+		content.append(w);
+		if(widget.after) widget.after(w);
+		widget.container = w;
+		return widget;
+	}
+
+	remove(widget){
+		const list = this.widgets.concat([]);
+		list.forEach((item, index) => {
+			if(item.x === widget.x && item.y === widget.y){
+				item.container.remove();
+				this.widgets.splice(index,1);
+			}
+		})
+	}
+
+	clear(){
+		this.widgets.forEach(item =>item.container.remove());
+		this.widgets = [];
+	}
+
+	resize(){
+		if(this.gridSettings.gridWidth){
+			const containers = $('#grid, #content');
+			const width = window.screen.width;
+			const height = window.screen.height;
+			const contentWidth = grid * this.gridSettings.gridWidth;
+			const contentHeight = grid * this.gridSettings.gridHeight;
+			containers.css({
+				width: contentWidth,
+				left: (width  > contentWidth ? (width - contentWidth) / 2 : 0),
+				top: (height  > contentHeight ? (height - contentHeight) / 2 : 0),
+			});
+		}
+	}
+
+	editable(el, widget){
+		$("#editable-cover").addClass('open');
+		$('#grid, #content').addClass('blur');
+		const popup = $("#editable-popup");
+		let type = widget.params.type || 'number';
+		if(type === 'num') type = 'number';
+		popup.addClass('open');
+		popup.find('b').text(widget.params.name);
+		popup.find('input')
+			.attr('type', type)
+			.val(widget.params.value)
+			.focus()
+			.keypress((e)=>{
+				if(e.key === 'Enter'){
+					const value = e.target.value;
+					widget.params.value = value;
+					el.find('span.editable').text(value);
+					widget.params.editCallback && widget.params.editCallback(value);
+					this.editableClose();
+				} else if(e.key === 'Escape'){
+					this.editableClose();
+				}
+			});
+	}
+
+	editableClose(){
+		$("#editable-popup, #editable-cover").removeClass('open');
+		$('#grid, #content').removeClass('blur');
 	}
 
 	text(widget){
@@ -45,11 +114,11 @@ class masterClass {
 		if(widget.params.count){
 			for(let i = 0; i<widget.params.count-1; i++) d+="<br><br>"+d;
 		}
-		return $("<div class='textList'><div class="+widget.params.addClass+">"+d+"</div></div>");
+		return $("<div class='textList'><div class="+(widget.params.addClass || '')+">"+d+"</div></div>");
 	}
 
 	list(widget){
-		const el = $("<div class='list "+widget.params.addClass+"'></div>"); 
+		const el = $("<div class='list "+(widget.params.addClass || '')+"'></div>"); 
 		const elIn = $("<div></div>"); 
 		const count = 100;
 		for(let i = 0; i < count; i++) {
@@ -70,7 +139,7 @@ class masterClass {
 	}
 
 	bar(widget){
-		const el = $("<div class='bars "+widget.params.addClass+"'></div>"); 
+		const el = $("<div class='bars "+(widget.params.addClass || '')+"'></div>"); 
 		if(widget.params.data === 'random'){
 			let data = [];
 			for(let i = 0; i < widget.params.count; i++) data.push(rand(100));
@@ -96,14 +165,14 @@ class masterClass {
 
 	roundBar(widget){
 		const el = $("<div class='roundBar'>");
-		const rb = $("<div class='round-bar'></div>");
+		const rb = $("<div class='round-bar top'></div>");
 		const rb2 = $("<div class='round-bar bottom'></div>");
 		const ra = $("<div class='round-axis' data-count='100' data-radius='"+((widget.w * grid/2)*0.9)+"' data-max='360'></div>");
 		const ra2 = $("<div class='round-axis inside' data-inside='true' data-count='100' data-radius='"+((widget.w * grid/2)*0.73)+"' data-max='360'></div>");
-		rb2.append("<div class='bar' data-value='0' data-max='100' data-side='left' style='border-color: var(--c-second);'></div>");
-		rb.append("<div class='bar' data-value='0' data-max='100' data-side='left' style='border-color: var(--c-second);'></div>");
-		rb2.append("<div class='bar line2' data-value='0' data-max='100' data-side='right' style='border-color: var(--c-negative);'></div>");
-		rb.append("<div class='bar line2' data-value='0' data-max='100' data-side='right' style='border-color: var(--c-negative);'></div>"); 
+		rb2.append("<div class='bar' data-id='1' data-value='0' data-max='100' data-side='right' style='border-color: var(--c-second);'></div>");
+		rb.append("<div class='bar' data-id='1' data-value='0' data-max='100' data-side='left' style='border-color: var(--c-second);'></div>");
+		rb2.append("<div class='bar line2' data-id='2' data-value='0' data-max='100' data-side='right' style='border-color: var(--c-negative);'></div>");
+		rb.append("<div class='bar line2' data-id='2' data-value='0' data-max='100' data-side='left' style='border-color: var(--c-negative);'></div>"); 
 		el.append(rb);
 		el.append(rb2);
 		el.append(ra);
@@ -126,14 +195,19 @@ class masterClass {
 		return el;
 	}
 	roundBarUpdate(el, widget){
-		el.find('.bar').each(function() {
-			$(this).data('value', rand(100)).trigger('update')
+		el.find('.round-bar.top .bar').each(function() {
+			const count = rand(200);
+			const dataId = $(this).data('id');
+			const v1 = count > 100 ? 100 : count;
+			const v2 = count > 100 ? count - 100 : 0;
+			$(this).data('value', v1).trigger('update');
+			el.find('.round-bar.bottom .bar[data-id='+dataId+']').data('value', v2).trigger('update');
 		});
 		el.find('.centerElement div').html(rand(9999));
 		setTimeout(()=>this.roundBarUpdate(el, widget), rand(widget.update.time))
 	}
 	values1(widget){
-		const el = $("<div class='values1 "+widget.params.addClass+"'></div>"); 
+		const el = $("<div class='values1 "+(widget.params.addClass || '')+"'></div>"); 
 		const count = widget.h * 4;
 		for(let i = 0; i < count; i++) {
 			const e = $("<div>");
@@ -148,14 +222,27 @@ class masterClass {
 		return el;
 	}
 	values2(widget){
-		const el = $("<div class='values2 "+widget.params.addClass+"'></div>"); 
+		const editable = widget.params.editable || false;
+		const el = $("<div class='values2 "+(editable ? 'editable ' : '')+(widget.params.addClass || '')+"'></div>"); 
 		const e = $("<div>");
 		const d = widget.params.name === true ? randSumbol()+randSumbol()+randSumbol() : widget.params.name;
 		e.append("<b>"+d+"</b>");
-		const v = $("<span>").html(rand(widget.params.max));
+		const type = widget.params.type || 'num';
+		const v = $("<span>");
+		if(widget.params.value) {
+			v.html(widget.params.value);
+		} else {
+			v.html(type === 'num' ? rand(widget.params.max || 100) : randString());
+		}
+		if(editable){
+			v.addClass('editable');
+			el.click(()=>this.editable(el, widget))
+		}
 		e.append(v);
 		if(widget.update){
-			setTimeout(()=>this[widget.update.callback](v, widget), rand(widget.update.time))
+			if(typeof(widget.update.callback) === 'string'){
+				setTimeout(()=>this[widget.update.callback](v, widget), rand(widget.update.time));
+			} else if(widget.update.callback) widget.update.callback(el, widget);
 		}
 		el.append(e);
 		return el;
@@ -173,7 +260,7 @@ class masterClass {
 	}
 
 	map(widget){
-		const el = $("<div class='map "+widget.params.addClass+"'></div>"); 
+		const el = $("<div class='map "+(widget.params.addClass || '')+"'></div>"); 
 		const e = $("<img src='../src/world.svg'/>");
 		if(widget.update){
 			setTimeout(()=>this[widget.update.callback](e, widget), 5000)
@@ -195,7 +282,7 @@ class masterClass {
 
 
 	liner(widget){
-		const el = $("<div class='liner "+widget.params.addClass+"'></div>");
+		const el = $("<div class='liner "+(widget.params.addClass || '')+"'></div>");
 		const e = $("<div>");
 		['top','left','down','right'].map(l => {
 			if(widget.params[l]){
@@ -223,15 +310,18 @@ class masterClass {
 	}
 
 	button(widget){
-		const el = $("<div class='button "+widget.params.addClass+"'></div>"); 
+		const el = $("<div class='button "+(widget.params.addClass || '')+"'></div>"); 
 		if(widget.params.trigger){
 			el.click(function(){
-				$(this).toggleClass('active');
+				const el = $(this);
+				el.toggleClass('active');
+				setTimeout(()=>widget.params.callback && widget.params.callback(el.hasClass('active')));
 			});
 		}else{
 			el.click(function(){
 				$(this).addClass('active');
 				setTimeout(()=>$(this).removeClass('active'),20);
+				widget.params.callback && widget.params.callback();
 			});
 		}
 		const d = widget.params.text ? (widget.params.text === true ? randSumbol()+randSumbol()+randSumbol() : widget.params.text) : "";
