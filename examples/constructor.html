@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no">
+    <title>Constructor</title>
+    <link href="../src/css/huds.css" rel="stylesheet" type="text/css">
+    <link href="../src/css/hud.css" rel="stylesheet" type="text/css">
+    <script src="../src/js/jquery.js" type="text/javascript" defer></script>
+    <script src="../src/js/hud.js" type="text/javascript" defer></script>
+    <script src="../src/js/hud-constructor.js" type="text/javascript" defer></script>
+    <style>
+        .grid>div:hover{
+            border: 3px solid var(--c-first);
+        }
+        .grid>div>div:hover{
+            box-sizing: border-box;
+            border: 3px solid var(--bg-first);
+        }
+        .editable-popup label{
+            font-size: 20px;
+            color: var(--c-first);
+            display: block
+        }
+        .editable-popup label>span{
+            margin-left: 10px;
+            width: 150px;
+            display: inline-block;
+            text-align: right;
+            padding: 0 10px;
+
+        }
+        .editable-popup select, .editable-popup input{
+            width: 150px;
+            font-size: 20px;
+            color: var(--c-first);
+            border: 1px solid var(--c-first);
+            background: var(--bg-first);
+        }
+        .small{
+            margin: 10px 0 20px 0;
+            left: calc(50% - 40px);
+        }
+        .editable-popup{
+            height: auto;
+        }
+        .smallContainer>div{
+            background: #000 !important;
+            margin: auto;
+            position: relative;
+            overflow: hidden;
+        }
+        .smallContainer{
+            display: flex;
+        }
+        textarea{
+            white-space: nowrap;
+            width: 500px;
+            height: 500px;
+            background: var(--bg-first);
+            border: 1px solid var(--c-first);
+            overflow: auto;
+            color: var(--c-active);
+            display: block;
+            margin: var(--s3);
+        }
+    </style>
+    <script type="text/javascript">
+        class masterClass {
+            constructor(){
+                this.widgets = [];
+                this.selectedElement = false;
+            }
+            init(){
+                this.gridWidth = prompt("gridWidth", 9);
+                this.gridHeight = prompt("gridHeight", 14);
+                hudInit([
+                        {x:0, y:0, w:2, content:'button', params:{text:"CODE", callback: ()=>this.prepareData(false), blink:false}},
+                        {x:2, y:0, w:2, content:'button', params:{text:"BUILD", callback: ()=>this.prepareData(true), blink:false}},
+                        {x:4, y:0, w:2, content:'button', params:{text:"PARSE", callback: ()=>this.renderNew(), blink:false}}
+                    ], {
+                    gridWidth: 9,
+                    gridHeight: 1,
+                    usePopup: false,
+                    useCell: false,
+                    resize: {
+                        vertical: 'top',
+                        horisontal: 'center'
+                    },
+                    container: '#controll'
+                });
+                this.hud = hudInit(this.widgets, {
+                    gridWidth: this.gridWidth,
+                    gridHeight: this.gridHeight,
+                    container: '#gridContainer'
+                });
+                this.hud.gridContainer.find(".grid").click(event => this.cellClick(event))
+            }
+            prepareData(full){
+                let obj = [... this.hud.widgets];
+                obj = obj.map(item => {
+                    const i = Object.assign({}, item);
+                    delete i.container;
+                    return JSON.stringify(i);
+                })
+                this.showResult(obj, full);
+            }
+            cellClick(event){
+                this.selectedElement = $(event.target);
+                while(!this.selectedElement.parent().hasClass("grid")){
+                    this.selectedElement = this.selectedElement.parent();
+                }
+                const className = this.selectedElement.attr('class').split(' ')[0];
+                this.showPopup();
+                this.switcher(className, className==='cell');
+            }
+            switcher(className, isNew){
+                const self = this;
+                const data = this.selectedElement.data();
+                const small = $("<div class='small'>");
+                const cell = $("<div class='cell'>");
+                const conteiner = $("<div class='smallContainer'>");
+                const content = $("<div>");
+                const widget = {
+                    x:data.widget ? data.widget.x : data.x, 
+                    y:data.widget ? data.widget.y : data.y, 
+                    w:data.widget ? data.widget.w : 1, 
+                    h:data.widget ? data.widget.h : 1, 
+                    params: {}
+                }
+                const params = data.widget ? data.widget.params : {};
+                const begin = {
+                    x: +widget.x,
+                    y: +widget.y,
+                }
+                for (let k in params) {
+                    widget.params[k] = params[k];
+                }
+                this.buildSwitcher = function(title) {
+                    small.append(conteiner);
+                    this.drawPopupContent(title, content);
+                    this.hud.gridContainer.find(".editable-popup .small").remove()
+                    this.hud.gridContainer.find(".editable-popup").find('span').first().parent().append(small)
+                    this.renderSmall(widget, conteiner);
+                    conteiner.click(function(){
+                        if(isNew) self.widgets.push(widget);
+                        else {
+                            const findItem = self.widgets.findIndex(item => item.x === begin.x && item.y === begin.y)
+                            if(findItem > -1) {
+                                self.widgets[findItem].container.remove()
+                                self.widgets[findItem] = Object.assign(widget,{});
+                            }
+                            else self.widgets.push(widget);
+                        }
+                        self.render();
+                        self.hud.editableClose();
+                    })
+                }
+                switch(className){
+                    case 'textList':{
+                        widget.content ='text';
+                        if(!widget.params.text) {
+                            widget.params.text = 'lorem';
+                            widget.params.addClass = 'default';
+                        }
+                        content.append(this.buildInput('text', widget.params['text'], data => {
+                            widget.params['text'] = data || false;
+                            this.renderSmall(widget, conteiner);
+                        }))
+                        this.buildControll(widget, content, isNew, true);
+                        this.buildSwitcher("text");
+
+                    }break;
+                    case 'values1':{
+                        widget.content ='values1';
+                        widget.update = {
+                            time: 5000, 
+                            callback:'valueUpdate'
+                        }
+                        if(!widget.params.max) {
+                            widget.params.max = 100;
+                        }
+                        content.append(this.buildInput('max', widget.params['max'], data => {
+                            widget.params['max'] = data
+                            this.renderSmall(widget, conteiner);
+                        }, true))
+                         content.append(this.buildInput('addClass', widget.params['addClass'], data => {
+                            widget.params['addClass'] = data || false;
+                            this.renderSmall(widget, conteiner);
+                        }))
+                        this.buildControll(widget, content, isNew, true);
+                        this.buildSwitcher("text");
+
+                    }break;
+                    case 'values2':{
+                        widget.content ='values2';
+                        if(!widget.params.value) widget.update = {
+                            time: 1000, 
+                            callback:'valueUpdate'
+                        }
+                        if(!widget.params.max) {
+                            widget.params.max = 100;
+                            widget.params.name = true;
+                        }
+                        content.append(this.buildInput('max', widget.params['max'], data => {
+                            widget.params['max'] = data
+                            this.renderSmall(widget, conteiner);
+                        }, true))
+                        content.append(this.buildInput('value', widget.params['value'], data => {
+                            widget.params['value'] = data
+                            if(data){
+                                delete widget.update;
+                            }
+                            this.renderSmall(widget, conteiner);
+                        }))
+                        content.append(this.buildInput('name', widget.params['name'], data => {
+                            widget.params['name'] = (data === 'random' ? true : data) || false;
+                            this.renderSmall(widget, conteiner);
+                        }))
+                        content.append(this.buildInput('type', widget.params['type'], data => {
+                            if(data){
+                                widget.params.type = data || false;
+                                widget.params.editable = true;   
+                            } else {
+                                widget.params.editable = false;    
+                                widget.params.type = false;
+                            }
+                            
+                            this.renderSmall(widget, conteiner);
+                        }))
+                         content.append(this.buildInput('addClass', widget.params['addClass'], data => {
+                            widget.params['addClass'] = data || false;
+                            this.renderSmall(widget, conteiner);
+                        }))
+                        this.buildControll(widget, content, isNew, true);
+                        this.buildSwitcher("text");
+
+                    }break;
+                    case 'bars':{
+                        widget.content ='bar';
+                        widget.params.data = 'random';
+                        widget.update = {
+                            time: 1000, 
+                            callback:'barUpdate'
+                        }
+                        if(!widget.params.count) {
+                            widget.params.count = 10;
+                        }
+                        content.append(this.buildInput('data', widget.params['data'], data => {
+                            widget.params['data'] = data || false;
+                            this.renderSmall(widget, conteiner);
+                        }))
+                        content.append(this.buildInput('addClass', widget.params['addClass'], data => {
+                            widget.params['addClass'] = data || false;
+                            this.renderSmall(widget, conteiner);
+                        }))
+                        content.append(this.buildInput('count', widget.params['count'], data => {
+                            widget.params['count'] = +data;
+                            widget.params.data = 'random';
+                            this.renderSmall(widget, conteiner);
+                        }, true))
+                        this.buildControll(widget, content, isNew, true);
+                        this.buildSwitcher("bar");
+
+                    }break;
+                    case 'list':{
+                        widget.content ='list';
+                        if(!widget.params.text) {
+                            widget.params.text = 'lorem';
+                            widget.params.addClass = 'default';
+                        }
+                        content.append(this.buildInput('text', widget.params['text'], data => {
+                            widget.params['text'] = data || false;
+                            this.renderSmall(widget, conteiner);
+                        }))
+                        this.buildControll(widget, content, isNew, true);
+                        this.buildSwitcher("list");
+
+                    }break;
+                    case 'roundBar':{
+                        widget.content ='roundBar';
+                        widget.w =3;
+                        widget.h =3;
+                        if(!widget.params.value) widget.update = {
+                            time: 6000, 
+                            callback:'roundBarUpdate'
+                        };
+
+                        ([
+                            'topLeftText',
+                            'topRightText',
+                            'downLeftText',
+                            'downRightText'
+                        ]).forEach(item =>content.append(
+                            this.buildInput(item, widget.params[item], data => {
+                                widget.params[item] = (data === 'random' ? true : data) || false;
+                                this.renderSmall(widget, conteiner);
+                            }))
+                        )
+                        this.buildControll(widget, content, isNew, false);
+                        this.buildSwitcher("round bar");
+
+                    }break;
+                    case 'map':{
+                        widget.content ='map';
+                        widget.update = {
+                            time: 6000, 
+                            callback:'mapUpdate'
+                        }
+                        this.buildControll(widget, content, isNew, true);
+                        this.buildSwitcher("round bar");
+
+                    }break;
+                    case 'liner':{
+                        widget.content ='liner';
+                        delete widget.w;
+                        delete widget.h;
+                        
+                        const lineSelectConfig = {
+                            solid:'Solid', 
+                            dashed:'Dashed', 
+                            dotted: 'dotted', 
+                            'solid negative':"Solid negative",
+                            'dotted negative':"Dotted negative",
+                            'dashed negative':"Dashed negative",
+                            'solid first':"Solid first",
+                            'dotted first':"Dotted first",
+                            'dashed first':"Dashed first",
+                            'solid important':"Solid important",
+                            'dotted important':"Dotted important",
+                            'dashed important':"Dashed important"
+                        }
+                        const lineSideSelectConfig = {
+                            solid:'Solid', 
+                            circle:'Circle', 
+                            'solid negative':"Solid negative",
+                            'solid first':"Solid first",
+                            'solid blink':"Solid blink",
+                            'circle negative':"Circle negative",
+                            'circle first':"Circle first",
+                            'circle blink':"Circle blink"
+                        }
+                        const lineCenterSelectConfig = {
+                            solid:'Solid', 
+                            circle:'Circle', 
+                            'solid negative':"Solid negative",
+                            'solid first':"Solid first",
+                            'solid blink':"Solid blink",
+                            'circle negative':"Circle negative",
+                            'circle first':"Circle first",
+                            'circle blink':"Circle blink",
+                            ssolidText:'Solid text', 
+                            negativeText:"Negative text",
+                            importantText:"Important text",
+                            firstText:"First text",
+                        };
+
+                        [
+                            ['left',lineSelectConfig],
+                            ['right',lineSelectConfig],
+                            ['top',lineSelectConfig],
+                            ['down',lineSelectConfig],
+                            ['leftSide',lineSideSelectConfig],
+                            ['rightSide',lineSideSelectConfig],
+                            ['topSide',lineSideSelectConfig],
+                            ['downSide',lineSideSelectConfig],
+                            ['center',lineCenterSelectConfig]
+                        ].forEach(item =>content.append(
+                            this.buildSelect(item[0], item[1], widget.params[item[0]], data => {
+                                widget.params[item[0]] = data
+                                this.renderSmall(widget, conteiner);
+                            }))
+                        );
+                        ([
+                            'centerText',
+                            'topLeftText',
+                            'topRightText',
+                            'downLeftText','downRightText'
+                        ]).forEach(item =>content.append(
+                            this.buildInput(item, widget.params[item], data => {
+                                widget.params[item] = (data === 'random' ? true : data) || false;
+                                if(item === 'centerText' && widget.params[item]){
+                                    widget.params.center = 'text';
+                                }
+                                this.renderSmall(widget, conteiner);
+                            }))
+                        )
+                        this.buildControll(widget, content, isNew, false);
+                        this.buildSwitcher("liner");
+                    }break;
+                    case 'button':{
+                        widget.content ='button';
+                        if(!widget.params.text) widget.params.text = true;
+                        content.append(this.buildInput('text', widget.params['text'], data => {
+                            widget.params['text'] = (data === 'random' ? true : data) || false;
+                            this.renderSmall(widget, conteiner);
+                        }))
+                        content.append(this.buildInput('blink', widget.params['blink'], data => {
+                            widget.params['blink'] = (data === 'true' ? true : data) || false;
+                            this.renderSmall(widget, conteiner);
+                        }))
+                        this.buildControll(widget, content, isNew, true);
+                        this.buildSwitcher("button");
+
+                    }break;
+                    case 'cell':{
+                        const content = $("<div>");
+                        content.append(this.buildSelect("Type",{
+                                textList: 'textList',
+                                bars: 'bars',
+                                values1: 'values1',
+                                values2: 'values2',
+                                roundBar: 'roundBar',
+                                map: 'map',
+                                list: 'list',
+                                liner: 'liner',
+                                button: 'button'
+                            }, "", value =>{
+                                if(value) this.switcher(value, isNew);
+                            })
+                        )
+                        this.drawPopupContent("New element",content);
+                        this.hud.gridContainer.find(".editable-popup .small").remove()
+                    }break;
+                }
+            }
+            buildSelect(name, list, value, callback){
+                const label = $("<label>").html("<span>"+name+"</span>");
+                const content = $("<select>");
+                content.append('<option>')
+                for(let k in list){
+                    content.append('<option value="'+k+'">'+list[k]+'</option>')    
+                }
+                content.val(value);
+                content.change(function(){
+                    callback(this.value)
+                });
+                label.append(content);
+                return label;
+            }
+            buildInput(name, value, callback, number){
+                const label = $("<label>").html("<span>"+name+"</span>");
+                const content = $("<input>").val(value);
+                if(number) content.attr('type','number');
+                content.change(function(){
+                    callback(this.value)
+                });
+                label.append(content);
+                return label;
+            }
+            buildControll(widget, container, isNew , size){
+                const div = $("<div>");
+                div.append(this.buildInput('x', widget.x, value=>{widget.x = +value}, true))
+                div.append(this.buildInput('y', widget.y, value=>{widget.y = +value}, true))
+                if(size){
+                    div.append(this.buildInput('width', widget.w, value=>{widget.w = +value}, true))
+                    div.append(this.buildInput('height', widget.h, value=>{widget.h = +value}, true))
+                }
+                if(!isNew){
+                    div.append($("<input type='button' value='clone'>").click(()=>this.cloneWidget(widget)))
+                    div.append($("<input type='button' value='delete'>").click(()=>this.removeWidget(widget)))
+                }
+                container.append(div);
+            }
+            cloneWidget(widget){
+                const newObj = Object.assign(widget,{});
+                newObj.params = Object.assign(widget.params,{});
+                this.widgets.push(newObj);
+                this.render();
+                this.hud.editableClose();
+            }
+            removeWidget(widget){
+                const findItem = this.widgets.findIndex(item => item.x === widget.x && item.y === widget.y)
+                if(findItem > -1) {
+                    this.widgets[findItem].container.remove()
+                    this.widgets.splice(findItem,1);
+                }
+                this.render();
+                this.hud.editableClose();
+            }
+            renderSmall(widget, content){
+                const self = this;
+                content.html('');
+                this.hud.draw(widget, content);
+                this.hud.gridContainer.find(".smallContainer>div").first().css({top:0,left:0});
+            }
+            render(){
+                this.hud.clear();
+                this.hud.widgets = this.widgets;
+                this.hud.generate();
+            }
+            showPopup(){
+                this.hud.gridContainer.find(".editable-cover").addClass('open');
+                this.hud.gridContainer.find('.grid, .content').addClass('blur');
+                const popup = this.hud.gridContainer.find(".editable-popup");
+                popup.addClass('open');
+            }
+
+            drawPopupContent(name, content){
+                const popup = this.hud.gridContainer.find(".editable-popup");
+                if(name) popup.find('b').first().text(name);
+                popup.find('span').first().html('').append(content);
+            }
+
+            showResult(data, full){
+                let text = `hudInit([
+${data.join(`,
+`)}
+],{
+    gridWidth: ${this.hud.gridSettings.gridWidth},
+    gridHeight: ${this.hud.gridSettings.gridHeight}
+});`;
+                if (full) {
+                    text = `<!DOCTYPE html>
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no">
+<title>HUD</title>
+<link href="../src/css/huds.css" rel="stylesheet" type="text/css"/>
+<link href="../src/css/hud.css" rel="stylesheet" type="text/css"/>
+<script src="../src/js/jquery.js" type="text/javascript" defer><`+`/script>
+<script src="../src/js/hud.js" type="text/javascript" defer><`+`/script>
+<script src="../src/js/hud-constructor.js" type="text/javascript" defer><`+`/script>
+<script type="text/javascript">
+window.onload = () => {
+// hud data start
+${text}
+// hud data end
+}
+<`+`/script>
+</head>
+<body></body>
+</html>`;
+                }
+                const content = $('<textarea>').attr('maxlength', 500000).css({
+                    whiteSpace: 'nowrap',
+                    width: 500,
+                    height: 500
+                }).val(text);
+                this.showPopup();
+                this.drawPopupContent("Code",content);
+            }
+
+            renderNew(){
+                const content = $('<textarea id="newData">').attr('maxlength', 500000).css({
+                    whiteSpace: 'nowrap',
+                    width: 500,
+                    height: 500
+                });
+                this.showPopup();
+                const container = $("<div>");
+                container.append(content);
+                container.append($("<input type='button' value='Build'>").click(()=>{
+                    let data = $('#newData').val();
+                    if(data.indexOf('// hud data start')>-1){
+                        data = data.split('// hud data start')[1].split('// hud data end')[0].trim();
+                    }
+                    data = data.replace("gridHeight", "container: '#gridContainer', gridHeight");
+                    this.hud.gridContainer.html('');
+                    try{
+                        eval("this.hud="+data);
+                        this.widgets = this.hud.widgets;
+                        this.hud.gridContainer.find(".grid").click(event => this.cellClick(event))
+                    } catch(e){
+                        console.log(e);
+                    }
+                }));
+                this.drawPopupContent("Code",container);
+            }
+        }
+        window.master = new masterClass();
+
+        window.onload = () => {
+            window.master.init();
+        }
+    </script>
+</head>
+    <body>
+        <div id="controll"></div>
+        <div id="gridContainer"></div>
+    </body>
+</html>

@@ -119,7 +119,7 @@ a.back{
     left: 0;
 }
 
-#grid{
+.grid{
   position: absolute;
   top: 0;
   left: 0;
@@ -127,7 +127,11 @@ a.back{
   height: 100%;
 }
 
-#grid div{
+.grid div{
+  z-index: 2;
+}
+
+.grid>div.cell{
   float: left;
   position: relative;
   width: 80px;
@@ -135,22 +139,21 @@ a.back{
   opacity: 0.3;
   border: 3px solid;
   border-image: url(../img/white.png) 35% round round;
+  z-index: 1;
 }
 
-#grid, #content{
-    transform: scale(1);
+.grid, .content{
     opacity: 1;
-    transition: transform var(--scale-speed), filter var(--scale-speed), opacity var(--scale-speed);
-    transform-origin: top;
 }
 
-#content{
+.content{
   position: relative;
   width: 100%;
   height: 100%;
 }
 
-#content>div{
+.grid>div{
+  z-index: 2;
   position: absolute;
   border: 3px solid;
   overflow: hidden;
@@ -158,20 +161,17 @@ a.back{
   border-image: url(../img/white.png) 35% round round;
 }
 
-#content>div.transparent{
+.grid>div.transparent{
   background: transparent;
 }
 
-#content.blur, #grid.blur{
-  opacity: 0.8;
-  transform: scale(0.95);
-  filter: blur(4px);
+.grid.blur, #grid.blur{
+  opacity: 0.5;
 }
 
-#editable-cover{
+.editable-cover{
   display: none;
-  opacity: 0.1;
-  background: black;
+  background: rgba(0,0,0,0.1);
   position: fixed;
   top: 0;
   left: 0;
@@ -180,20 +180,18 @@ a.back{
   z-index: 49;
 }
 
-#editable-popup{
+.editable-popup{
   display: none;
-  position: fixed;
   border: 3px solid;
-  width: 344px;
-  top: calc(50% - 86px);
-  left: calc(50% - 175px);
-  height: 172px;
+  min-width: 344px;
+  height: auto;
+  margin: auto;
   z-index: 50;
   background: #000;
   border-image: url(../img/white.png) 35% round round;
 }
 
-#editable-popup>div{
+.editable-popup>div{
   background: var(--bg-second);
   width: 100%;
   height: 100%;
@@ -201,7 +199,7 @@ a.back{
   flex-direction: column;
 }
 
-#editable-popup>div>b{
+.editable-popup>div>b{
   background: var(--c-second);
   color: var(--bg-color);
   padding: var(--s1);
@@ -212,7 +210,17 @@ a.back{
   text-transform: uppercase;
 }
 
-#editable-popup>div>span{
+/*.editable-popup .main{
+  font-size: 40px;
+  font-weight: bold;
+  color: var(--c-second);
+  text-align: center;
+  margin: auto;
+  display: block;
+  box-sizing: border-box;
+}*/
+
+.editable-popup>div>span{
   font-size: 40px;
   font-weight: bold;
   color: var(--c-second);
@@ -222,7 +230,7 @@ a.back{
   box-sizing: border-box;
 }
 
-#editable-popup>div>span>input{
+.editable-popup>div>span>input{
   background: none;
   border: none;
   color: var(--c-important);
@@ -231,9 +239,11 @@ a.back{
   width: 100%;
 }
 
-#editable-popup.open,
-#editable-cover.open{
+.editable-popup.open{
   display: block;
+}
+.editable-cover.open{
+  display: flex;
 }
 
 .textList, .list {
@@ -375,7 +385,7 @@ a.back{
 }
 
 .values2>div>span{
-  font-size: 40px;
+  font-size: 30px;
   font-weight: bold;
   color: var(--c-second);
   text-align: center;
@@ -411,35 +421,35 @@ a.back{
   color: var(--c-negative);
 }
 
-#content div.round-bar{
+.grid div.round-bar{
   width: calc(100% - 20px);
   height: calc(50% - 10px);
   left: 10px;
   top: 10px;
 }
-#content div.round-bar.bottom{
+.grid div.round-bar.bottom{
   top: 50%
 }
 
-#content div.round-bar .bar{
+.grid div.round-bar .bar{
   border-top-width: 10px !important;
   border-left-width: 10px !important;
   border-bottom-width: 10px !important;
   border-right-width: 10px !important;
   transition: transform 2s;
 }
-#content div.round-bar.bottom .bar.line2{
+.grid div.round-bar.bottom .bar.line2{
   top: calc(-100% + 10px);
   left: 10px;
 }
-#content div.round-bar .bar.line2{
+.grid div.round-bar .bar.line2{
   width: calc(100% - 20px);
   height: calc(200% - 20px);
   left: 10px;
   top: 10px;
 }
 
-#content div.round-axis{
+.grid div.round-axis{
   left: 50%;
   top: 50%
 }
@@ -618,6 +628,14 @@ div.liner{
   border-color: var(--c-negative);
 }
 
+.liner .line.important{
+  border-color: var(--c-important);
+}
+
+.liner .line.first{
+  border-color: var(--c-first);
+}
+
 .liner>div div.solid div{
   background: var(--c-second);
 }
@@ -637,6 +655,22 @@ div.liner{
 
 .liner>div .side.negative{
   border-color: var(--c-negative);
+}
+.liner>div div.important>div{
+  background: var(--c-important);
+  border: 1px solid var(--c-important);
+}
+
+.liner>div .side.important{
+  border-color: var(--c-important);
+}
+.liner>div div.first>div{
+  background: var(--c-first);
+  border: 1px solid var(--c-first);
+}
+
+.liner>div .side.first{
+  border-color: var(--c-first);
 }
 
 .liner>div div.blink>div{
@@ -730,7 +764,7 @@ div.liner{
   display: flex;
   justify-content: center;
   align-items: center;
-  font-size: 30px;
+  font-size: 25px;
   font-weight: bold;
   color: var(--c-second);
   text-transform: uppercase;
@@ -745,7 +779,7 @@ div.liner{
   display: flex;
   justify-content: center;
   align-items: center;
-  font-size: 30px;
+  font-size: 25px;
   font-weight: bold;
   color: var(--c-first);
   text-transform: uppercase;

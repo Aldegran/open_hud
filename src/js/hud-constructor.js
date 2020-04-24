@@ -1,5 +1,5 @@
 function hudInit(widgets, gridSettings) {
-	window.hud = new hudClass(widgets, gridSettings);
+	return new hudClass(widgets, gridSettings);
 }
 const grid = 86;
 const texts = {
@@ -19,13 +19,38 @@ const randString = function() {
 }
 class hudClass {
 	constructor(widgets, gridSettings){
-		this.gridSettings = Object.assign({gridWidth:9, gridHeight:14}, gridSettings);
+		this.gridSettings = Object.assign({
+			gridWidth:9, 
+			gridHeight:14, 
+			usePopup: true,
+			useCell: true,
+			resize: {
+                vertical: 'center',
+                horisontal: 'center'
+            }
+		}, gridSettings);
 		this.widgets = widgets;
-		$(window).resize(()=>this.resize());const el = $('#grid');
-		$('body').append($('<div>').attr('id', 'editable-popup').html("<div><b></b><span><input/></span></div>"));
-		$('body').append($('<div>').attr('id', 'editable-cover').click(()=>this.editableClose()));
-		const count = this.gridSettings.gridWidth * this.gridSettings.gridHeight;
-		for(let i = 0; i < count; i++) el.append("<div>");
+		this.gridContainer = $(gridSettings.container || 'body')
+		this.gridContainer.resize(()=>this.resize())
+		this.gridContainer.css({
+			display:'flex',
+			position:'relative'
+		});
+		const el = $('<div>').attr('class',"grid");
+		if(this.gridSettings.usePopup){
+			const popup = $('<div>').attr('class', 'editable-popup').html("<div><b></b><span><input/></span></div>")
+			this.gridContainer.append($('<div>').attr('class', 'editable-cover').click((event)=>{
+				if($(event.target).hasClass('editable-cover')) this.editableClose();
+			}).append(popup));
+		}
+		if(this.gridSettings.useCell){
+			for(let y = 0; y < this.gridSettings.gridHeight; y++) {
+				for(let x = 0; x < this.gridSettings.gridWidth; x++) {
+					el.append($("<div>").addClass('cell').data('x',x).data('y',y));
+				}
+			}
+		}
+		this.gridContainer.append(el);
 		this.generate();
 		this.resize();
 	}
@@ -34,8 +59,8 @@ class hudClass {
 		this.widgets.map(widget => this.draw(widget));
 	}
 
-	draw(widget){
-		const content = $('#content');
+	draw(widget, container){
+		const content = container || this.gridContainer.find('.grid');
 		const w = typeof widget.content === "string" ? this[widget.content](widget) : widget.content(widget);
 		w.css({
 			top: widget.y*grid,
@@ -43,6 +68,7 @@ class hudClass {
 			width: (widget.w || 1)*grid-6,
 			height: (widget.h || 1)*grid-6
 		})
+		w.data('widget', widget);
 		content.append(w);
 		if(widget.after) widget.after(w);
 		widget.container = w;
@@ -66,23 +92,41 @@ class hudClass {
 
 	resize(){
 		if(this.gridSettings.gridWidth){
-			const containers = $('#grid, #content');
+			const containers = this.gridContainer.find('.grid, .content');
 			const width = window.screen.width;
 			const height = window.screen.height;
 			const contentWidth = grid * this.gridSettings.gridWidth;
 			const contentHeight = grid * this.gridSettings.gridHeight;
-			containers.css({
+			const css = {
 				width: contentWidth,
-				left: (width  > contentWidth ? (width - contentWidth) / 2 : 0),
-				top: (height  > contentHeight ? (height - contentHeight) / 2 : 0),
-			});
+				height: contentHeight,
+			}
+			this.gridContainer.css(css);
+			if(this.gridSettings.resize.vertical == 'center'){
+				css.top = height  > contentHeight ? (height - contentHeight) / 2 : 0
+			} else if(this.gridSettings.resize.vertical == 'top'){
+				css.top = 0;
+			} else if(this.gridSettings.resize.vertical == 'bottom'){
+				css.bottom = 0;
+			}
+
+			if(this.gridSettings.resize.horisontal == 'center'){
+				css.left = width  > contentWidth ? (width - contentWidth) / 2 : 0
+			} else if(this.gridSettings.resize.horisontal == 'left'){
+				css.left = 0;
+			} else if(this.gridSettings.resize.horisontal == 'right'){
+				css.right = 0;
+			}
+
+			containers.css(css);
 		}
 	}
 
 	editable(el, widget){
-		$("#editable-cover").addClass('open');
-		$('#grid, #content').addClass('blur');
-		const popup = $("#editable-popup");
+		if(!this.gridSettings.usePopup) return;
+		this.gridContainer.find(".editable-cover").addClass('open');
+		this.gridContainer.find('.grid, .content').addClass('blur');
+		const popup = $(".editable-popup");
 		let type = widget.params.type || 'number';
 		if(type === 'num') type = 'number';
 		popup.addClass('open');
@@ -105,12 +149,12 @@ class hudClass {
 	}
 
 	editableClose(){
-		$("#editable-popup, #editable-cover").removeClass('open');
-		$('#grid, #content').removeClass('blur');
+		this.gridContainer.find(".editable-popup, .editable-cover").removeClass('open');
+		this.gridContainer.find('.grid, .content').removeClass('blur');
 	}
 
 	text(widget){
-		let d = texts[widget.params.text];
+		let d = texts[widget.params.text] || widget.params.text ;
 		if(widget.params.count){
 			for(let i = 0; i<widget.params.count-1; i++) d+="<br><br>"+d;
 		}
@@ -234,7 +278,7 @@ class hudClass {
 		} else {
 			v.html(type === 'num' ? rand(widget.params.max || 100) : randString());
 		}
-		if(editable){
+		if(editable && this.gridSettings.usePopup){
 			v.addClass('editable');
 			el.click(()=>this.editable(el, widget))
 		}
@@ -294,7 +338,7 @@ class hudClass {
 		})
 		if(widget.params.center){
 			let d = '';
-			if(widget.params.center.indexOf('text') > -1) {
+			if(widget.params.centerText) {
 				d = widget.params.centerText === true ? randString()+" "+randString()+" "+randString()+" "+randString() : widget.params.centerText;
 			}
 			e.append($("<div class='center "+widget.params.center+"'><div>"+d+"</div></div>"))
