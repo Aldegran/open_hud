@@ -3,10 +3,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no">
     <title>Constructor</title>
-    <link href="../src/css/huds.css" rel="stylesheet" type="text/css">
-    <link href="../src/css/hud.css" rel="stylesheet" type="text/css">
     <script src="../src/js/jquery.js" type="text/javascript" defer></script>
-    <script src="../src/js/hud.js" type="text/javascript" defer></script>
     <script src="../src/js/hud-constructor.js" type="text/javascript" defer></script>
     <style>
         .grid>div:hover{
@@ -82,6 +79,8 @@
                     gridHeight: 1,
                     usePopup: false,
                     useCell: false,
+                    css: 'huds05',
+                    grid: 56,
                     resize: {
                         vertical: 'top',
                         horisontal: 'center'
@@ -91,7 +90,8 @@
                 this.hud = hudInit(this.widgets, {
                     gridWidth: this.gridWidth,
                     gridHeight: this.gridHeight,
-                    container: '#gridContainer'
+                    container: '#gridContainer',
+                    grid: 56
                 });
                 this.hud.gridContainer.find(".grid").click(event => this.cellClick(event))
             }
@@ -502,12 +502,14 @@
             }
 
             showResult(data, full){
+                const grid = this.hud.grid === 86 ? '':`,
+    grid: ${this.hud.grid}`;
                 let text = `hudInit([
 ${data.join(`,
 `)}
 ],{
     gridWidth: ${this.hud.gridSettings.gridWidth},
-    gridHeight: ${this.hud.gridSettings.gridHeight}
+    gridHeight: ${this.hud.gridSettings.gridHeight}${grid}
 });`;
                 if (full) {
                     text = `<!DOCTYPE html>
@@ -516,9 +518,7 @@ ${data.join(`,
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no">
 <title>HUD</title>
 <link href="../src/css/huds.css" rel="stylesheet" type="text/css"/>
-<link href="../src/css/hud.css" rel="stylesheet" type="text/css"/>
 <script src="../src/js/jquery.js" type="text/javascript" defer><`+`/script>
-<script src="../src/js/hud.js" type="text/javascript" defer><`+`/script>
 <script src="../src/js/hud-constructor.js" type="text/javascript" defer><`+`/script>
 <script type="text/javascript">
 window.onload = () => {

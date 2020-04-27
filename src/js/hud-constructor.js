@@ -1,7 +1,169 @@
+//// round text
+
+function roundText(el,settings){
+  if(typeof el == "string" || !el){
+      el = $((el || '') + '.roundText-prepare');
+  }
+  settings = $.extend({
+    offsetX: 0,
+    offsetY: 0,
+    space: 10,
+    start: 0,
+    radius: 0,
+  },settings || {})
+  el.each(function(){
+    var item = $(this),
+      text = item.text().split(''),
+      counter = 0,
+      size = +item.data('radius') || settings.radius,
+      offsetX = +item.data('offsetX') || settings.offsetX,
+      offsetY = +item.data('offsetY') || settings.offsetY,
+      deg = 2*Math.asin(((+item.data('space') || settings.space)/2)/size),
+      n = 180/Math.PI,
+      start = (+item.data('start') || settings.start)/n;
+
+    item.removeClass('roundText-prepare').addClass('roundText').html('');
+    for(var s of text){
+      let a = start + deg*counter++,
+        y = Math.sin(a)*size+offsetY,
+        x = Math.cos(a)*size+offsetX;
+
+        item.append($('<div>')
+          .attr({
+            class: 'roundText-item'
+          })
+          .css({
+            top:-y,
+            left:-x,
+            transform:"rotate("+(a*n-90)+"deg)"
+          }).text(s)
+        );
+    }
+  })
+}
+
+/*
+<div style="border: 1px solid red; margin: 100px; width: 100px;">
+  <div class="roundText-prepare" data-radius="50" data-offset-x="5" data-offset-y="8" data-space="10" data-start="90">Some round text</div>
+</div>
+*/
+
+///// dynamic-line
+function dynamicLine(el){
+  if(typeof el == "string" || !el){
+      el = $((el || '') + '.dynamic-line');
+  }
+
+  var calculationRotateItem = function(){
+    var item = $(this);
+    var start = {
+        x: +item.data('startX'),
+        y: +item.data('startY'),
+      },
+      end = {
+        x: +item.data('endX'),
+        y: +item.data('endY'),
+      },
+      length = Math.sqrt(Math.pow(end.y - start.y, 2) + Math.pow(end.x - start.x, 2)),
+      ang = Math.atan2(end.y - start.y, end.x - start.x)/(Math.PI/180);
+      item.css({
+        top: start.y,
+        left: start.x,
+        width: length,
+        transform: "rotate("+ang+"deg)",
+      });
+  },
+  line = function(start, end){
+    if(start) $(this).data('startX',start.x).data('startY',start.y);
+    if(end) $(this).data('endX',end.x).data('endY',end.y);
+    $(this).trigger("update");
+  }
+  el.each(function(){
+    this.line = line.bind(this);
+    $(this).on("update",calculationRotateItem).trigger("update");
+  });
+}
+
+/*
+<div class="dynamic-line" data-start-x="0" data-start-y="0" data-end-x="100" data-end-y="100" >
+  <div class="puls"></div>
+</div>
+*/
+
+///// roundBar
+function roundBar(el){
+  if(typeof el == "string" || !el){
+      el = $((el || '') + '.round-bar .bar');
+
+  }
+  var updateBar = function(){
+    var bar = $(this),
+      value = +bar.data('value'),
+      rightSide = bar.data('side') == 'right',
+      maxValue = +bar.data('max') || 100,
+      bottom = bar.parent().hasClass('bottom'),
+      maxA = maxValue*1.8,
+      a = value*(maxA/100);
+      a = a<0 ? 0 : (a>maxA ? maxA : a);
+      a += bottom ? 180 : 0;
+      rightSide = bottom ? !rightSide : rightSide;
+      if(rightSide) a = 45-a;
+      else a += 45;
+      bar.css('transform', 'rotate('+(a)+'deg)');
+  }
+  el.on("update",updateBar).each(updateBar);
+}
+
+/*
+  <div class="round-bar"> //или class="round-bar bottom"
+    <div class="bar" data-value="80" data-max="100" data-side="left"></div>
+    <div class="bar line2" data-value="80" data-max="50" data-side="left" style="border-color: #f68d00;"></div>
+    <div class="bar line2" data-value="20" data-max="50" data-side="right" style="border-color: #ff0000;"></div>
+  </div>
+*/
+
+///// roundBarAxis
+function roundAxis(el){
+  if(typeof el == "string" || !el){
+      el = $((el || '') + '.round-axis');
+
+  }
+  var updateAxis = function(){
+    var axis = $(this),
+      radius = +axis.data('radius') || axis.width(),
+      maxAngle = +axis.data('max') || 360,
+      count = axis.data('count') || 100,
+      inside = !!axis.data('inside'),
+      d = maxAngle / count,
+      k = 180/Math.PI;
+      for(let i = 0; i<count; i++){
+        let item = $('<i>'),
+          a = d * i,
+          x = Math.cos(a/k) * radius,
+          y = Math.sin(a/k) * radius,
+          type =i%5 ? "small" : '';
+        if(i%10 == 0) type = 'big';
+        if(inside) a += 180;
+        item.css({
+          left: x,
+          top: y,
+          transform: 'rotate('+a+'deg)'
+        }).attr('class', type);
+        axis.append(item);
+      }
+  }
+  el.on("update",updateAxis).each(updateAxis);
+}
+
+/*
+<div class="round-axis" data-count="100" data-radius="100" data-max="360"></div> // data-inside="true" для линий во внутрь
+*/
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 function hudInit(widgets, gridSettings) {
 	return new hudClass(widgets, gridSettings);
 }
-const grid = 86;
 const texts = {
 	lorem: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam neque ante, iaculis sed neque varius, sagittis cursus odio. Duis tellus odio, accumsan eget magna non, rhoncus mattis enim. Donec eu ex sit amet enim consectetur suscipit quis non metus. Aenean at nunc erat. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Integer eu tristique quam. Nam dapibus mattis nibh nec gravida. Etiam id volutpat urna. <br><br> Suspendisse potenti. Etiam a ullamcorper nulla. Proin malesuada ligula nisl, suscipit faucibus lectus egestas eget. Fusce eget eros non nunc porttitor tempus ut quis enim. Nulla sed nibh vitae leo mollis iaculis in quis augue. Maecenas velit felis, pellentesque at rutrum nec, accumsan at mi. Aenean sed accumsan purus, ut viverra libero. Mauris dignissim nisl lectus. Pellentesque sit amet augue neque. Phasellus facilisis non justo sed scelerisque. <br><br> Nulla non pellentesque est. Pellentesque id magna et felis consectetur eleifend. Donec non turpis imperdiet, porttitor massa sit amet, aliquam elit. Nulla a lacus tempus, pulvinar lectus scelerisque, ornare ligula. Proin nisi sapien, placerat sit amet hendrerit nec, fringilla id erat. Nullam non congue neque, et maximus urna. Suspendisse semper commodo mi, et facilisis erat pharetra et. Nulla facilisi. Morbi ut egestas lorem. Maecenas dictum dictum ante id tristique. Fusce at sapien turpis. <br><br> Aliquam suscipit eros quis bibendum fermentum. Donec sed purus in libero congue pulvinar. Duis in placerat erat. Curabitur arcu orci, scelerisque eu turpis sit amet, rutrum cursus purus. Vestibulum aliquam nisi est, in convallis lacus fringilla ac. Proin pulvinar efficitur augue, non elementum magna commodo ut. Maecenas aliquet interdum ex. In in lectus erat. Aenean suscipit urna nec molestie congue. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. <br><br> Sed aliquet est ut magna semper, nec mollis est pulvinar. Nulla facilisi. Phasellus interdum arcu dui, hendrerit suscipit turpis dignissim et. Aliquam tempor varius gravida. Suspendisse rhoncus libero tellus, id sodales urna blandit at. Praesent elementum, enim ut elementum malesuada, erat turpis vestibulum libero, et lacinia elit diam quis nisl. Aenean egestas sodales viverra. Proin bibendum diam nec arcu pharetra, vitae porta neque mollis. Vestibulum facilisis, neque in fringilla rutrum, sapien metus vulputate quam, varius aliquam nisi urna in nulla. Sed ut metus vitae dui convallis eleifend at nec nisl. Nunc metus ligula, dignissim malesuada aliquam a, efficitur vel nisi. Quisque vel ex leo. Pellentesque dapibus egestas ex, quis finibus tellus convallis feugiat. Nulla vestibulum lectus ut hendrerit dapibus.",
 	sumbols: ("qwertyuiopasdfghjklzxcvbnm").split(''),
@@ -24,11 +186,21 @@ class hudClass {
 			gridHeight:14, 
 			usePopup: true,
 			useCell: true,
+			grid: 86,
+			css: false,
 			resize: {
                 vertical: 'center',
                 horisontal: 'center'
             }
 		}, gridSettings);
+		this.grid = this.gridSettings.grid;
+		if(this.gridSettings.css){
+			$("head").append($("<link>").attr({
+				href: "../src/css/"+(this.gridSettings.css === true ? 'huds' : this.gridSettings.css)+".css",
+				rel: "stylesheet",
+				type: "text/css"
+			}))
+		}
 		this.widgets = widgets;
 		this.gridContainer = $(gridSettings.container || 'body')
 		this.gridContainer.resize(()=>this.resize())
@@ -63,10 +235,10 @@ class hudClass {
 		const content = container || this.gridContainer.find('.grid');
 		const w = typeof widget.content === "string" ? this[widget.content](widget) : widget.content(widget);
 		w.css({
-			top: widget.y*grid,
-			left: widget.x*grid,
-			width: (widget.w || 1)*grid-6,
-			height: (widget.h || 1)*grid-6
+			top: widget.y*this.grid,
+			left: widget.x*this.grid,
+			width: (widget.w || 1)*this.grid-6,
+			height: (widget.h || 1)*this.grid-6
 		})
 		w.data('widget', widget);
 		content.append(w);
@@ -95,8 +267,8 @@ class hudClass {
 			const containers = this.gridContainer.find('.grid, .content');
 			const width = window.screen.width;
 			const height = window.screen.height;
-			const contentWidth = grid * this.gridSettings.gridWidth;
-			const contentHeight = grid * this.gridSettings.gridHeight;
+			const contentWidth = this.grid * this.gridSettings.gridWidth;
+			const contentHeight = this.grid * this.gridSettings.gridHeight;
 			const css = {
 				width: contentWidth,
 				height: contentHeight,
@@ -192,7 +364,7 @@ class hudClass {
 		widget.params.data.map(bar => {
 			const b = $("<div>");
 			b.css({
-				width: (widget.w * grid) / widget.params.data.length,
+				width: (widget.w * this.grid) / widget.params.data.length,
 				height: bar+'%'
 			})
 			el.append(b);
@@ -211,8 +383,8 @@ class hudClass {
 		const el = $("<div class='roundBar'>");
 		const rb = $("<div class='round-bar top'></div>");
 		const rb2 = $("<div class='round-bar bottom'></div>");
-		const ra = $("<div class='round-axis' data-count='100' data-radius='"+((widget.w * grid/2)*0.9)+"' data-max='360'></div>");
-		const ra2 = $("<div class='round-axis inside' data-inside='true' data-count='100' data-radius='"+((widget.w * grid/2)*0.73)+"' data-max='360'></div>");
+		const ra = $("<div class='round-axis' data-count='100' data-radius='"+((widget.w * this.grid/2)*0.9)+"' data-max='360'></div>");
+		const ra2 = $("<div class='round-axis inside' data-inside='true' data-count='100' data-radius='"+((widget.w * this.grid/2)*0.73)+"' data-max='360'></div>");
 		rb2.append("<div class='bar' data-id='1' data-value='0' data-max='100' data-side='right' style='border-color: var(--c-second);'></div>");
 		rb.append("<div class='bar' data-id='1' data-value='0' data-max='100' data-side='left' style='border-color: var(--c-second);'></div>");
 		rb2.append("<div class='bar line2' data-id='2' data-value='0' data-max='100' data-side='right' style='border-color: var(--c-negative);'></div>");
