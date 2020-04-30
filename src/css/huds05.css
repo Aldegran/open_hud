@@ -806,6 +806,14 @@ div.liner{
   animation-iteration-count: infinite;
   animation-timing-function: step-start;
 }
+
+.button .blink.flash{
+  animation-name: blinkColor;
+  animation-duration: 1000ms;
+  animation-iteration-count: 1;
+  animation-timing-function: step-start;
+}
+
 .button .blink.empty{
   background: transparent;
   border: 1px groove var(--c-second);

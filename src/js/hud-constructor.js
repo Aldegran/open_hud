@@ -210,7 +210,7 @@ class hudClass {
 		});
 		const el = $('<div>').attr('class',"grid");
 		if(this.gridSettings.usePopup){
-			const popup = $('<div>').attr('class', 'editable-popup').html("<div><b></b><span><input/></span></div>")
+			const popup = $('<div>').attr('class', 'editable-popup').html("<div><b></b><span class='contentEdit'></span></div>")
 			this.gridContainer.append($('<div>').attr('class', 'editable-cover').click((event)=>{
 				if($(event.target).hasClass('editable-cover')) this.editableClose();
 			}).append(popup));
@@ -298,15 +298,14 @@ class hudClass {
 		if(!this.gridSettings.usePopup) return;
 		this.gridContainer.find(".editable-cover").addClass('open');
 		this.gridContainer.find('.grid, .content').addClass('blur');
-		const popup = $(".editable-popup");
+		const popup = this.gridContainer.find(".editable-popup");
 		let type = widget.params.type || 'number';
 		if(type === 'num') type = 'number';
 		popup.addClass('open');
 		popup.find('b').text(widget.params.name);
-		popup.find('input')
+		popup.find('.contentEdit').append($('<input>')
 			.attr('type', type)
 			.val(widget.params.value)
-			.focus()
 			.keypress((e)=>{
 				if(e.key === 'Enter'){
 					const value = e.target.value;
@@ -317,10 +316,13 @@ class hudClass {
 				} else if(e.key === 'Escape'){
 					this.editableClose();
 				}
-			});
+			})
+		);
+		popup.find('.contentEdit input').focus();
 	}
 
 	editableClose(){
+		this.gridContainer.find('.contentEdit input').remove();
 		this.gridContainer.find(".editable-popup, .editable-cover").removeClass('open');
 		this.gridContainer.find('.grid, .content').removeClass('blur');
 	}
