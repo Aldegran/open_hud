@@ -3,7 +3,6 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no">
     <title>Examples</title>
-    <link href="../src/css/huds.css" rel="stylesheet" type="text/css">
     <script src="../src/js/jquery.js" type="text/javascript" defer></script>
     <script src="../src/js/hud-constructor.js" type="text/javascript" defer></script>
     <script type="text/javascript">
@@ -113,6 +112,8 @@
             gridHeight: 14,     // высота канвы в ячейках
             usePopup: true,     // использовать попапы и сделать для них контейнеры
             useCell: true,      // показывать подложку из ячеек
+            css: 'huds05',      // использовать другой файл стилей (конкретно этот адаптирован под сетку grig: 56)
+            grid: 56,           // размер сетки в пикселях (по умолчанию 86)
             resize: {
                 vertical: 'top',// выравнивание канвы по вертикали по  верхнему краю
                 horisontal: 'center' // выравнивание канвы по горизонтали по сентру

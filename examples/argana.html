@@ -290,11 +290,19 @@
             {x:0, y:10, w:3, h:4, content:'text', params:{text:'lorem', count:2, addClass: 'default'}},
         ];
 
-        window.onload = () => hudInit(widgets);
+        // отрисовываем виджеты
+
+        const gridSettings = {
+            gridWidth: 9,
+            gridHeight: 14,
+            resize: {
+                vertical: 'top',
+                horisontal: 'center'
+            },
+        }
+
+        window.onload = () => hudInit(widgets, gridSettings);
     </script>
 </head>
-    <body>
-        <div id="grid"></div>
-        <div id="content"></div>
-    </body>
+    <body></body>
 </html>
